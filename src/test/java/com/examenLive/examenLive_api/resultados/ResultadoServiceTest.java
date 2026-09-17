@@ -1,0 +1,39 @@
+package com.examenLive.examenLive_api.resultados;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class ResultadoServiceTest {
+
+	@Mock
+	private ResultadoFactory resultadoFactory;
+
+	@Mock
+	private CalificacionAutomaticaService calificacionAutomaticaService;
+
+	@InjectMocks
+	private ResultadoService resultadoService;
+
+	@Test
+	void iniciarDelegaLaCreacionEnLaFactory() {
+		UUID sesionId = UUID.randomUUID();
+		UUID estudianteId = UUID.randomUUID();
+		Resultado esperado = new ResultadoFactory().crear(sesionId, estudianteId);
+		when(resultadoFactory.crear(sesionId, estudianteId)).thenReturn(esperado);
+
+		Resultado resultado = resultadoService.iniciar(sesionId, estudianteId);
+
+		assertThat(resultado).isSameAs(esperado);
+		verify(resultadoFactory).crear(sesionId, estudianteId);
+	}
+}
