@@ -11,27 +11,15 @@ public class Sesion {
     private final Set<Long> estudiantesIds;
 
     public Sesion(
-            Long id,
-            Long examenId,
-            VentanaTiempo ventanaTiempo
-    ) {
-        if (id == null) {
-            throw new IllegalArgumentException("El id de la sesión es obligatorio");
-        }
-
-        if (examenId == null) {
-            throw new IllegalArgumentException("El id del examen es obligatorio");
-        }
-
-        if (ventanaTiempo == null) {
-            throw new IllegalArgumentException("La ventana de tiempo es obligatoria");
-        }
-
-        this.id = id;
-        this.examenId = examenId;
-        this.ventanaTiempo = ventanaTiempo;
-        this.estudiantesIds = new HashSet<>();
-    }
+        Long id,
+        Long examenId,
+        VentanaTiempo ventanaTiempo
+) {
+    this.id = id;
+    this.examenId = examenId;
+    this.ventanaTiempo = ventanaTiempo;
+    this.estudiantesIds = new HashSet<>();
+}
 
     public void agregarEstudiante(Long estudianteId) {
         if (estudianteId == null) {

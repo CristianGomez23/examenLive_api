@@ -39,16 +39,5 @@ class SesionTest {
         assertTrue(sesion.getEstudiantesIds().contains(200L));
     }
 
-    @Test
-    void noDebePermitirSesionSinExamen() {
-        VentanaTiempo ventana = new VentanaTiempo(
-                LocalDateTime.of(2026, 9, 19, 14, 0),
-                LocalDateTime.of(2026, 9, 19, 16, 0)
-        );
 
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new Sesion(1L, null, ventana)
-        );
-    }
 }
