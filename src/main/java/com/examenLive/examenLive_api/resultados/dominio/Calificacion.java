@@ -1,4 +1,4 @@
-package com.examenLive.examenLive_api.resultados;
+package com.examenLive.examenLive_api.resultados.dominio;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

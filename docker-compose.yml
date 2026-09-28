@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: examenlive-resultados-db
+    environment:
+      POSTGRES_DB: examenlive
+      POSTGRES_USER: examenlive
+      POSTGRES_PASSWORD: examenlive
+    ports:
+      - "5433:5432"
+    volumes:
+      - resultados_data:/var/lib/postgresql/data
+
+volumes:
+  resultados_data:

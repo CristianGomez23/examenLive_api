@@ -1,4 +1,6 @@
-package com.examenLive.examenLive_api.resultados;
+package com.examenLive.examenLive_api.resultados.aplicacion;
+
+import com.examenLive.examenLive_api.resultados.dominio.Resultado;
 
 import org.springframework.stereotype.Component;
 

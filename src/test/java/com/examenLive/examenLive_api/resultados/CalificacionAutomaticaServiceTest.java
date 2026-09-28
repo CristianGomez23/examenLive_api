@@ -1,5 +1,8 @@
 package com.examenLive.examenLive_api.resultados;
 
+import com.examenLive.examenLive_api.resultados.aplicacion.CalificacionAutomaticaService;
+import com.examenLive.examenLive_api.resultados.aplicacion.ResultadoFactory;
+import com.examenLive.examenLive_api.resultados.dominio.*;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

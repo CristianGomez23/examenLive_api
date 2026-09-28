@@ -1,5 +1,6 @@
 package com.examenLive.examenLive_api.resultados;
 
+import com.examenLive.examenLive_api.resultados.dominio.Respuesta;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

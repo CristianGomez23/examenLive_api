@@ -1,5 +1,8 @@
 package com.examenLive.examenLive_api.resultados;
 
+import com.examenLive.examenLive_api.resultados.aplicacion.ResultadoFactory;
+import com.examenLive.examenLive_api.resultados.dominio.EstadoResultado;
+import com.examenLive.examenLive_api.resultados.dominio.Resultado;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

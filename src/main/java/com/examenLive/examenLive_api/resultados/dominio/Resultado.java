@@ -1,4 +1,4 @@
-package com.examenLive.examenLive_api.resultados;
+package com.examenLive.examenLive_api.resultados.dominio;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public final class Resultado {
 	private EstadoResultado estado;
 	private Calificacion calificacion;
 
-	Resultado(UUID resultadoId, UUID sesionId, UUID estudianteId, Instant creadoEn) {
+	public Resultado(UUID resultadoId, UUID sesionId, UUID estudianteId, Instant creadoEn) {
 		this.resultadoId = resultadoId;
 		this.sesionId = sesionId;
 		this.estudianteId = estudianteId;

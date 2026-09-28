@@ -1,4 +1,4 @@
-package com.examenLive.examenLive_api.resultados;
+package com.examenLive.examenLive_api.resultados.dominio;
 
 public class RespuestaNoModificableException extends RuntimeException {
 
