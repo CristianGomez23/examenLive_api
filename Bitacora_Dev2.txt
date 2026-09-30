@@ -1,0 +1,132 @@
+BITÁCORA DE TRABAJO – DDD
+
+Proyecto: Banco de exámenes en línea con sesiones en vivo
+Grupo: G8
+Subdominio: Sesiones en Vivo
+Integrante: Dev 2
+Rama: dev2-sesiones
+
+1. LENGUAJE UBICUO
+
+Tiempo estimado: ~20 min. tiempo real 20 min
+
+Se revisaron las historias de usuario relacionadas con el subdominio de Sesiones en Vivo y se identificaron los principales términos utilizados en el dominio.
+
+Se estableció el vocabulario correspondiente a los conceptos Sesión, Ventana de tiempo, Estudiante, Ingreso, Reingreso, Desconexión, Tiempo restante, Cierre de sesión y Respuesta.
+
+También se verificó que los nombres utilizados posteriormente en el código correspondieran al lenguaje utilizado en las historias de usuario.
+
+2. VALUE OBJECT
+
+Tiempo estimado: ~45 min. tiempo real 40 min
+
+Se identificó VentanaTiempo como un Value Object real del subdominio de Sesiones en Vivo.
+
+Se implementó como un record, utilizando inicio y fin como atributos. Se agregó validación para evitar valores nulos y para garantizar que el inicio de la ventana fuera anterior al fin.
+
+También se agregó el método estaActiva(), encargado de determinar si un momento específico se encuentra dentro de la ventana de tiempo de la sesión.
+
+Se realizaron pruebas unitarias para comprobar la creación de una ventana válida, el rechazo de fechas inválidas y el funcionamiento de la validación de actividad.
+
+Commit:
+04e4d82 feat: implementar value object VentanaTiempo
+
+Fecha y hora del commit:
+19/09/2026 16:09:07
+
+3. SERVICIO DE DOMINIO
+
+Tiempo estimado: ~35 min. tiempo real 30 min
+
+Se implementó el servicio de dominio ControlIngresoSesionService para centralizar la regla relacionada con el ingreso y reingreso de estudiantes a una sesión.
+
+El servicio permite el ingreso cuando la ventana de tiempo se encuentra activa y rechaza el ingreso cuando la sesión todavía no ha comenzado o ya ha finalizado.
+
+También se implementó el control de reingreso, permitiéndolo mientras la sesión continúe activa y rechazándolo después del cierre.
+
+Se realizaron pruebas unitarias para comprobar el ingreso dentro y fuera de la ventana y el reingreso antes y después del cierre.
+
+Commit:
+b1dd7ad feat: implementar servicio de dominio para controlar ingreso a sesiones
+
+Fecha y hora del commit:
+19/09/2026 18:23:20
+
+4. LÍMITE DEL AGREGADO tiempo real 20 min
+
+Tiempo estimado: ~15 min.
+
+Se definió Sesion como la raíz del agregado del subdominio de Sesiones en Vivo.
+
+La entidad Sesion mantiene la información propia de la sesión y controla los estudiantes asociados mediante sus identificadores.
+
+La referencia al examen se realiza mediante examenId y los estudiantes se manejan mediante estudiantesIds. De esta manera, no se mantienen objetos completos pertenecientes a otros subdominios, respetando el límite del agregado y la comunicación entre subdominios mediante identificadores.
+
+Se realizaron pruebas para comprobar la creación de una sesión con la referencia al examen mediante ID y la asociación de estudiantes mediante sus respectivos identificadores.
+
+Commit:
+e2662d8 feat: definir agregado Sesion y referencias por id
+
+Fecha y hora del commit:
+19/09/2026 19:00:03
+
+5. FACTORY
+
+Tiempo estimado: ~35 min. tiempo real 35 min
+
+Se trasladó la validación y construcción de la entidad raíz a una Factory dedicada.
+
+Se implementó SesionFactory, encargada de validar los datos necesarios para crear una sesión: el ID de la sesión, el ID del examen y la ventana de tiempo.
+
+La Factory solamente crea la sesión cuando los datos requeridos son válidos. Esto permite separar la responsabilidad de construcción y validación de la entidad raíz.
+
+Se realizaron pruebas unitarias para comprobar la creación de una sesión válida y el rechazo de sesiones cuando falta el ID de la sesión, el ID del examen o la ventana de tiempo.
+
+Commit:
+1c37ed6 feat: implementar factory para crear sesiones
+
+Fecha y hora del commit:
+19/09/2026 19:27:43
+
+6. COMMIT Y PUSH
+
+Tiempo estimado: ~5 min. tiempo real 5 min
+
+Se consolidaron los cambios realizados durante los pasos individuales de DDD mediante commits descriptivos en la rama propia del subdominio.
+
+La rama utilizada fue:
+
+dev2-sesiones
+
+Posteriormente se realizó correctamente el push de la rama al repositorio remoto.
+
+Comando utilizado:
+
+git push -u origin dev2-sesiones
+
+Resultado:
+
+La rama dev2-sesiones fue creada en el repositorio remoto y quedó configurada para realizar seguimiento de origin/dev2-sesiones.
+
+Queda como evidencia final la apertura del Pull Request desde dev2-sesiones hacia main.
+
+HISTORIAL DE COMMITS
+
+1c37ed6 feat: implementar factory para crear sesiones
+e2662d8 feat: definir agregado Sesion y referencias por id
+b1dd7ad feat: implementar servicio de dominio para controlar ingreso a sesiones
+04e4d82 feat: implementar value object VentanaTiempo
+dddee74 feat: inicializar el proyecto con Spring Boot 4.1.1 y una estructura de bounded contexts
+
+REGISTRO TEMPORAL
+
+El historial de Git registra las siguientes horas de cierre de cada etapa:
+
+Paso 2: 19/09/2026 – 16:09:07
+Paso 3: 19/09/2026 – 18:23:20
+Paso 4: 19/09/2026 – 19:00:03
+Paso 5: 19/09/2026 – 19:27:43
+
+Estos horarios corresponden a las marcas temporales de los commits y permiten evidenciar la secuencia en la que fueron realizadas las etapas. No se consideran necesariamente como tiempo efectivo continuo de trabajo.
+
+
