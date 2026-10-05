@@ -2,7 +2,7 @@ spring:
   application:
     name: examenLive_api
   datasource:
-    url: jdbc:postgresql://localhost:5433/examenlive
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/examenlive}
     username: examenlive
     password: examenlive
     driver-class-name: org.postgresql.Driver
