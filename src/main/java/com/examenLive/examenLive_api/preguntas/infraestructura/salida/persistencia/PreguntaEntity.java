@@ -7,26 +7,26 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "preguntas")
 public class PreguntaEntity {
 
 	@Id
-	private UUID id;
+	private Long id;
 	private String tipo;
 	@Column(nullable = false, length = 2000)
 	private String enunciado;
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "pregunta_respuestas_correctas", joinColumns = @JoinColumn(name = "pregunta_id"))
-	@Column(name = "respuesta", nullable = false)
-	private Set<String> respuestasCorrectas = new HashSet<>();
+	@CollectionTable(name = "pregunta_opciones", joinColumns = @JoinColumn(name = "pregunta_id"))
+	@OrderColumn(name = "orden")
+	private List<OpcionPreguntaEntity> opciones = new ArrayList<>();
 	@Column(nullable = false, precision = 10, scale = 2)
 	private BigDecimal puntaje;
 	@Column(nullable = false)
@@ -38,10 +38,10 @@ public class PreguntaEntity {
 	}
 
 	public PreguntaEntity(
-			UUID id,
+			Long id,
 			String tipo,
 			String enunciado,
-			Set<String> respuestasCorrectas,
+			List<OpcionPreguntaEntity> opciones,
 			BigDecimal puntaje,
 			boolean activa,
 			boolean usadaEnSesionAplicada
@@ -49,13 +49,13 @@ public class PreguntaEntity {
 		this.id = id;
 		this.tipo = tipo;
 		this.enunciado = enunciado;
-		this.respuestasCorrectas = new HashSet<>(respuestasCorrectas);
+		this.opciones = new ArrayList<>(opciones);
 		this.puntaje = puntaje;
 		this.activa = activa;
 		this.usadaEnSesionAplicada = usadaEnSesionAplicada;
 	}
 
-	public UUID getId() {
+	public Long getId() {
 		return id;
 	}
 
@@ -67,8 +67,8 @@ public class PreguntaEntity {
 		return enunciado;
 	}
 
-	public Set<String> getRespuestasCorrectas() {
-		return Set.copyOf(respuestasCorrectas);
+	public List<OpcionPreguntaEntity> getOpciones() {
+		return List.copyOf(opciones);
 	}
 
 	public BigDecimal getPuntaje() {

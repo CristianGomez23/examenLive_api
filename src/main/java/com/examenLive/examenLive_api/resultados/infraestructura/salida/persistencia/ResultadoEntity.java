@@ -2,21 +2,20 @@ package com.examenLive.examenLive_api.resultados.infraestructura.salida.persiste
 
 import jakarta.persistence.*;
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name="resultados")
 public class ResultadoEntity {
     @Id
-    private UUID id;
-    private UUID sesionId;
-    private UUID estudianteId;
+    private Long id;
+    private Long sesionId;
+    private Long estudianteId;
     private Instant creadoEn;
     private String estado;
 
     protected ResultadoEntity(){}
 
-    public ResultadoEntity(UUID id, UUID sesionId, UUID estudianteId, Instant creadoEn, String estado){
+    public ResultadoEntity(Long id, Long sesionId, Long estudianteId, Instant creadoEn, String estado){
         this.id=id;
         this.sesionId=sesionId;
         this.estudianteId=estudianteId;
@@ -24,9 +23,9 @@ public class ResultadoEntity {
         this.estado=estado;
     }
 
-    public UUID getId(){return id;}
-    public UUID getSesionId(){return sesionId;}
-    public UUID getEstudianteId(){return estudianteId;}
+    public Long getId(){return id;}
+    public Long getSesionId(){return sesionId;}
+    public Long getEstudianteId(){return estudianteId;}
     public Instant getCreadoEn(){return creadoEn;}
     public String getEstado(){return estado;}
 }

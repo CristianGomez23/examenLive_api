@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -16,7 +15,7 @@ class RespuestaTest {
 	@Test
 	void creaUnaRespuestaInmutable() {
 		Set<String> seleccion = new LinkedHashSet<>(Set.of("A"));
-		Respuesta respuesta = new Respuesta(UUID.randomUUID(), seleccion, Instant.now());
+		Respuesta respuesta = new Respuesta(10L, seleccion, Instant.now());
 
 		seleccion.add("B");
 
@@ -34,7 +33,7 @@ class RespuestaTest {
 
 	@Test
 	void rechazaUnaRespuestaSinValoresSeleccionados() {
-		assertThatThrownBy(() -> new Respuesta(UUID.randomUUID(), Set.of(), Instant.now()))
+		assertThatThrownBy(() -> new Respuesta(10L, Set.of(), Instant.now()))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("valor");
 	}

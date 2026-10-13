@@ -1,13 +1,13 @@
 package com.examenLive.examenLive_api.preguntas.infraestructura.salida.persistencia;
 
-import com.examenLive.examenLive_api.preguntas.aplicacion.PreguntaRepository;
+import com.examenLive.examenLive_api.preguntas.dominio.puertos.salida.PreguntaRepository;
 import com.examenLive.examenLive_api.preguntas.dominio.Pregunta;
+import com.examenLive.examenLive_api.preguntas.dominio.OpcionPregunta;
 import com.examenLive.examenLive_api.preguntas.dominio.TipoPregunta;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 public class PreguntaRepositoryJpaAdapter implements PreguntaRepository {
@@ -24,7 +24,7 @@ public class PreguntaRepositoryJpaAdapter implements PreguntaRepository {
 	}
 
 	@Override
-	public Optional<Pregunta> buscarPorId(UUID preguntaId) {
+	public Optional<Pregunta> buscarPorId(Long preguntaId) {
 		return repositorioJpa.findById(preguntaId).map(this::aDominio);
 	}
 
@@ -45,7 +45,9 @@ public class PreguntaRepositoryJpaAdapter implements PreguntaRepository {
 				pregunta.preguntaId(),
 				pregunta.tipo().nombre(),
 				pregunta.enunciado(),
-				pregunta.respuestasCorrectas(),
+				pregunta.opciones().stream()
+						.map(opcion -> new OpcionPreguntaEntity(opcion.texto(), opcion.correcta()))
+						.toList(),
 				pregunta.puntaje(),
 				pregunta.estaActiva(),
 				pregunta.usadaEnSesionAplicada()
@@ -57,7 +59,9 @@ public class PreguntaRepositoryJpaAdapter implements PreguntaRepository {
 				entidad.getId(),
 				new TipoPregunta(entidad.getTipo()),
 				entidad.getEnunciado(),
-				entidad.getRespuestasCorrectas(),
+				entidad.getOpciones().stream()
+						.map(opcion -> new OpcionPregunta(opcion.getTexto(), opcion.isCorrecta()))
+						.toList(),
 				entidad.getPuntaje(),
 				entidad.isActiva(),
 				entidad.isUsadaEnSesionAplicada()

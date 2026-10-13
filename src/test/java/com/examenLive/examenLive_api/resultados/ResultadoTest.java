@@ -5,11 +5,11 @@ import com.examenLive.examenLive_api.resultados.dominio.EstadoResultado;
 import com.examenLive.examenLive_api.resultados.dominio.Respuesta;
 import com.examenLive.examenLive_api.resultados.dominio.RespuestaNoModificableException;
 import com.examenLive.examenLive_api.resultados.dominio.Resultado;
+import com.examenLive.examenLive_api.identidad.GeneradorIdNumericoFake;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,7 +19,7 @@ class ResultadoTest {
 	@Test
 	void reemplazaLaRespuestaMientrasLaSesionSigueAbierta() {
 		Resultado resultado = nuevoResultado();
-		UUID preguntaId = UUID.randomUUID();
+		Long preguntaId = 10L;
 		resultado.registrarRespuesta(new Respuesta(preguntaId, Set.of("A"), Instant.now()));
 
 		resultado.registrarRespuesta(new Respuesta(preguntaId, Set.of("B"), Instant.now()));
@@ -35,7 +35,7 @@ class ResultadoTest {
 		resultado.cerrarRecepcionRespuestas();
 
 		assertThatThrownBy(() -> resultado.registrarRespuesta(
-				new Respuesta(UUID.randomUUID(), Set.of("A"), Instant.now())))
+				new Respuesta(11L, Set.of("A"), Instant.now())))
 				.isInstanceOf(RespuestaNoModificableException.class)
 				.hasMessageContaining("cierre");
 	}
@@ -50,6 +50,6 @@ class ResultadoTest {
 	}
 
 	private Resultado nuevoResultado() {
-		return new ResultadoFactory().crear(UUID.randomUUID(), UUID.randomUUID());
+		return new ResultadoFactory(new GeneradorIdNumericoFake(1)).crear(20L, 30L);
 	}
 }

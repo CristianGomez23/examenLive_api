@@ -1,15 +1,15 @@
 package com.examenLive.examenLive_api.resultados;
 
-import com.examenLive.examenLive_api.resultados.aplicacion.CalificacionAutomaticaService;
+import com.examenLive.examenLive_api.resultados.aplicacion.servicios.CalificacionAutomaticaService;
 import com.examenLive.examenLive_api.resultados.aplicacion.ResultadoFactory;
 import com.examenLive.examenLive_api.resultados.dominio.*;
+import com.examenLive.examenLive_api.identidad.GeneradorIdNumericoFake;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,7 +23,7 @@ class CalificacionAutomaticaServiceTest {
 	void rechazaLaCalificacionSiHayPreguntasSinPuntaje() {
 		Resultado resultado = resultadoCerrado();
 		PreguntaCalificable pregunta = new PreguntaCalificable(
-				UUID.randomUUID(), Set.of("A"), null);
+				10L, Set.of("A"), null);
 
 		assertThatThrownBy(() -> calificacionService.calificar(resultado, List.of(pregunta)))
 				.isInstanceOf(PreguntaSinPuntajeException.class)
@@ -34,9 +34,9 @@ class CalificacionAutomaticaServiceTest {
 
 	@Test
 	void calculaYRegistraLaCalificacionAutomatica() {
-		UUID preguntaCorrectaId = UUID.randomUUID();
-		UUID preguntaIncorrectaId = UUID.randomUUID();
-		Resultado resultado = new ResultadoFactory().crear(UUID.randomUUID(), UUID.randomUUID());
+		Long preguntaCorrectaId = 10L;
+		Long preguntaIncorrectaId = 11L;
+		Resultado resultado = new ResultadoFactory(new GeneradorIdNumericoFake(1)).crear(20L, 30L);
 		resultado.registrarRespuesta(new Respuesta(preguntaCorrectaId, Set.of("A"), Instant.now()));
 		resultado.registrarRespuesta(new Respuesta(preguntaIncorrectaId, Set.of("B"), Instant.now()));
 		resultado.cerrarRecepcionRespuestas();
@@ -54,7 +54,7 @@ class CalificacionAutomaticaServiceTest {
 	}
 
 	private Resultado resultadoCerrado() {
-		Resultado resultado = new ResultadoFactory().crear(UUID.randomUUID(), UUID.randomUUID());
+		Resultado resultado = new ResultadoFactory(new GeneradorIdNumericoFake(1)).crear(20L, 30L);
 		resultado.cerrarRecepcionRespuestas();
 		return resultado;
 	}

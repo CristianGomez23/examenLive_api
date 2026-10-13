@@ -1,6 +1,7 @@
 package com.examenLive.examenLive_api.preguntas.infraestructura.entrada.web;
 
-import com.examenLive.examenLive_api.preguntas.aplicacion.PreguntaUseCase;
+import com.examenLive.examenLive_api.preguntas.dominio.puertos.entrada.PreguntaUseCase;
+import com.examenLive.examenLive_api.preguntas.dominio.OpcionPregunta;
 import com.examenLive.examenLive_api.preguntas.dominio.TipoPregunta;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/preguntas")
@@ -31,7 +31,9 @@ public class PreguntaController {
 		PreguntaResponse respuesta = PreguntaResponse.desde(preguntas.registrar(
 				new TipoPregunta(solicitud.tipo()),
 				solicitud.enunciado(),
-				solicitud.respuestasCorrectas(),
+				solicitud.opciones().stream()
+						.map(opcion -> new OpcionPregunta(opcion.texto(), opcion.correcta()))
+						.toList(),
 				solicitud.puntaje()
 		));
 		return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
@@ -43,18 +45,18 @@ public class PreguntaController {
 	}
 
 	@GetMapping("/{preguntaId}")
-	public PreguntaResponse consultar(@PathVariable UUID preguntaId) {
+	public PreguntaResponse consultar(@PathVariable Long preguntaId) {
 		return PreguntaResponse.desde(preguntas.consultar(preguntaId));
 	}
 
 	@PatchMapping("/{preguntaId}/desactivar")
-	public PreguntaResponse desactivar(@PathVariable UUID preguntaId) {
+	public PreguntaResponse desactivar(@PathVariable Long preguntaId) {
 		preguntas.desactivar(preguntaId);
 		return PreguntaResponse.desde(preguntas.consultar(preguntaId));
 	}
 
 	@DeleteMapping("/{preguntaId}")
-	public ResponseEntity<Void> eliminar(@PathVariable UUID preguntaId) {
+	public ResponseEntity<Void> eliminar(@PathVariable Long preguntaId) {
 		preguntas.eliminar(preguntaId);
 		return ResponseEntity.noContent().build();
 	}

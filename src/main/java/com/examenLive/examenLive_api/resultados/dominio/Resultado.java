@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Raíz del agregado que reúne las respuestas y la calificación de un estudiante.
@@ -16,15 +15,15 @@ import java.util.UUID;
  */
 public final class Resultado {
 
-	private final UUID resultadoId;
-	private final UUID sesionId;
-	private final UUID estudianteId;
+	private final Long resultadoId;
+	private final Long sesionId;
+	private final Long estudianteId;
 	private final Instant creadoEn;
-	private final Map<UUID, Respuesta> respuestasPorPregunta;
+	private final Map<Long, Respuesta> respuestasPorPregunta;
 	private EstadoResultado estado;
 	private Calificacion calificacion;
 
-	public Resultado(UUID resultadoId, UUID sesionId, UUID estudianteId, Instant creadoEn) {
+	public Resultado(Long resultadoId, Long sesionId, Long estudianteId, Instant creadoEn) {
 		this.resultadoId = resultadoId;
 		this.sesionId = sesionId;
 		this.estudianteId = estudianteId;
@@ -63,7 +62,7 @@ public final class Resultado {
 		estado = EstadoResultado.CALIFICADO;
 	}
 
-	public Optional<Respuesta> respuestaPara(UUID preguntaId) {
+	public Optional<Respuesta> respuestaPara(Long preguntaId) {
 		return Optional.ofNullable(respuestasPorPregunta.get(preguntaId));
 	}
 
@@ -75,15 +74,15 @@ public final class Resultado {
 		return Optional.ofNullable(calificacion);
 	}
 
-	public UUID resultadoId() {
+	public Long resultadoId() {
 		return resultadoId;
 	}
 
-	public UUID sesionId() {
+	public Long sesionId() {
 		return sesionId;
 	}
 
-	public UUID estudianteId() {
+	public Long estudianteId() {
 		return estudianteId;
 	}
 

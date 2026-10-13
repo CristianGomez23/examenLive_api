@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Value Object que representa la respuesta enviada para una pregunta.
@@ -13,7 +12,7 @@ import java.util.UUID;
  * que una respuesta ya creada no pueda alterarse.</p>
  */
 public record Respuesta(
-		UUID preguntaId,
+		Long preguntaId,
 		Set<String> valoresSeleccionados,
 		Instant enviadaEn
 ) {

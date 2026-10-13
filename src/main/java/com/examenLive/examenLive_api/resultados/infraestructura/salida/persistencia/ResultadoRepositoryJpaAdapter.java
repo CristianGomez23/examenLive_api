@@ -1,10 +1,9 @@
 package com.examenLive.examenLive_api.resultados.infraestructura.salida.persistencia;
 
-import com.examenLive.examenLive_api.resultados.aplicacion.RepositorioResultados;
+import com.examenLive.examenLive_api.resultados.dominio.puertos.salida.RepositorioResultados;
 import com.examenLive.examenLive_api.resultados.dominio.Resultado;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 public class ResultadoRepositoryJpaAdapter implements RepositorioResultados {
@@ -28,7 +27,7 @@ public class ResultadoRepositoryJpaAdapter implements RepositorioResultados {
     }
 
     @Override
-    public Optional<Resultado> buscarPorId(UUID id){
+    public Optional<Resultado> buscarPorId(Long id){
         return resultadoRepository.findById(id)
             .map(e -> new Resultado(
                 e.getId(),

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Proyección local de una pregunta con los datos mínimos para calificarla.
@@ -13,7 +12,7 @@ import java.util.UUID;
  * la información incompleta que el servicio debe detectar antes de calificar.</p>
  */
 public record PreguntaCalificable(
-		UUID preguntaId,
+		Long preguntaId,
 		Set<String> respuestasCorrectas,
 		BigDecimal puntajeAsignado
 ) {

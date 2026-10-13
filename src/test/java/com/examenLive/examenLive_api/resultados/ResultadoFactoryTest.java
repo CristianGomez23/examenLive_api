@@ -3,21 +3,21 @@ package com.examenLive.examenLive_api.resultados;
 import com.examenLive.examenLive_api.resultados.aplicacion.ResultadoFactory;
 import com.examenLive.examenLive_api.resultados.dominio.EstadoResultado;
 import com.examenLive.examenLive_api.resultados.dominio.Resultado;
+import com.examenLive.examenLive_api.identidad.GeneradorIdNumericoFake;
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ResultadoFactoryTest {
 
-	private final ResultadoFactory resultadoFactory = new ResultadoFactory();
+	private final ResultadoFactory resultadoFactory = new ResultadoFactory(new GeneradorIdNumericoFake(1));
 
 	@Test
 	void creaLaRaizDelAgregadoCompleta() {
-		UUID sesionId = UUID.randomUUID();
-		UUID estudianteId = UUID.randomUUID();
+		Long sesionId = 20L;
+		Long estudianteId = 30L;
 
 		Resultado resultado = resultadoFactory.crear(sesionId, estudianteId);
 
@@ -30,7 +30,7 @@ class ResultadoFactoryTest {
 
 	@Test
 	void rechazaLaCreacionSinSesion() {
-		assertThatThrownBy(() -> resultadoFactory.crear(null, UUID.randomUUID()))
+		assertThatThrownBy(() -> resultadoFactory.crear(null, 30L))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("sesión");
 	}

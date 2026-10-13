@@ -1,17 +1,17 @@
 package com.examenLive.examenLive_api.resultados;
 
-import com.examenLive.examenLive_api.resultados.aplicacion.CalificacionAutomaticaService;
-import com.examenLive.examenLive_api.resultados.aplicacion.RepositorioResultados;
+import com.examenLive.examenLive_api.resultados.aplicacion.servicios.CalificacionAutomaticaService;
+import com.examenLive.examenLive_api.resultados.dominio.puertos.salida.RepositorioResultados;
 import com.examenLive.examenLive_api.resultados.aplicacion.ResultadoFactory;
-import com.examenLive.examenLive_api.resultados.aplicacion.ResultadoService;
+import com.examenLive.examenLive_api.resultados.aplicacion.servicios.ResultadoService;
 import com.examenLive.examenLive_api.resultados.dominio.Resultado;
+import com.examenLive.examenLive_api.identidad.GeneradorIdNumericoFake;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -34,10 +34,10 @@ class ResultadoServiceTest {
 
 	@Test
 	void iniciarDelegaLaCreacionEnLaFactory() {
-		UUID sesionId = UUID.randomUUID();
-		UUID estudianteId = UUID.randomUUID();
+		Long sesionId = 20L;
+		Long estudianteId = 30L;
 
-		Resultado esperado = new ResultadoFactory().crear(sesionId, estudianteId);
+		Resultado esperado = new ResultadoFactory(new GeneradorIdNumericoFake(1)).crear(sesionId, estudianteId);
 
 		when(resultadoFactory.crear(sesionId, estudianteId)).thenReturn(esperado);
 

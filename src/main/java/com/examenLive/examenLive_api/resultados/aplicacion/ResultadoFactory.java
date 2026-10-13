@@ -1,11 +1,11 @@
 package com.examenLive.examenLive_api.resultados.aplicacion;
 
+import com.examenLive.examenLive_api.identidad.dominio.puertos.salida.GeneradorId;
 import com.examenLive.examenLive_api.resultados.dominio.Resultado;
 
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Factory responsable de validar y construir la raíz del agregado Resultado.
@@ -13,13 +13,19 @@ import java.util.UUID;
 @Component
 public class ResultadoFactory {
 
-	public Resultado crear(UUID sesionId, UUID estudianteId) {
-		validarReferencia(sesionId, "El resultado debe referenciar una sesión.");
-		validarReferencia(estudianteId, "El resultado debe referenciar un estudiante.");
-		return new Resultado(UUID.randomUUID(), sesionId, estudianteId, Instant.now());
+	private final GeneradorId generadorId;
+
+	public ResultadoFactory(GeneradorId generadorId) {
+		this.generadorId = generadorId;
 	}
 
-	private void validarReferencia(UUID referencia, String mensaje) {
+	public Resultado crear(Long sesionId, Long estudianteId) {
+		validarReferencia(sesionId, "El resultado debe referenciar una sesión.");
+		validarReferencia(estudianteId, "El resultado debe referenciar un estudiante.");
+		return new Resultado(generadorId.siguienteId(), sesionId, estudianteId, Instant.now());
+	}
+
+	private void validarReferencia(Long referencia, String mensaje) {
 		if (referencia == null) {
 			throw new IllegalArgumentException(mensaje);
 		}

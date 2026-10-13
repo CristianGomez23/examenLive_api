@@ -1,26 +1,26 @@
 package com.examenLive.examenLive_api.preguntas.dominio;
 
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 public final class Pregunta {
 
-	private final UUID preguntaId;
+	private final Long preguntaId;
 	private final TipoPregunta tipo;
 	private final String enunciado;
-	private final Set<String> respuestasCorrectas;
+	private final List<OpcionPregunta> opciones;
 	private final BigDecimal puntaje;
 	private boolean activa;
 	private boolean usadaEnSesionAplicada;
 
 	public Pregunta(
-			UUID preguntaId,
+			Long preguntaId,
 			TipoPregunta tipo,
 			String enunciado,
-			Set<String> respuestasCorrectas,
+			List<OpcionPregunta> opciones,
 			BigDecimal puntaje
 	) {
 		if (preguntaId == null) {
@@ -32,39 +32,48 @@ public final class Pregunta {
 		if (enunciado == null || enunciado.isBlank()) {
 			throw new IllegalArgumentException("El enunciado de la pregunta es obligatorio.");
 		}
-		if (respuestasCorrectas == null || respuestasCorrectas.isEmpty()) {
-			throw new IllegalArgumentException("La pregunta debe tener al menos una respuesta correcta.");
+		if (opciones == null || opciones.isEmpty()) {
+			throw new IllegalArgumentException("La pregunta debe tener opciones.");
 		}
 		if (puntaje == null || puntaje.signum() <= 0) {
 			throw new IllegalArgumentException("El puntaje de la pregunta debe ser positivo.");
 		}
 
-		LinkedHashSet<String> respuestasNormalizadas = new LinkedHashSet<>();
-		for (String respuesta : respuestasCorrectas) {
-			if (respuesta == null || respuesta.isBlank()) {
-				throw new IllegalArgumentException("Las respuestas correctas no pueden ser nulas ni vacías.");
+		ArrayList<OpcionPregunta> opcionesValidadas = new ArrayList<>();
+		LinkedHashSet<String> textos = new LinkedHashSet<>();
+		boolean tieneCorrecta = false;
+		for (OpcionPregunta opcion : opciones) {
+			if (opcion == null) {
+				throw new IllegalArgumentException("Las opciones no pueden ser nulas.");
 			}
-			respuestasNormalizadas.add(respuesta.trim());
+			if (!textos.add(opcion.texto())) {
+				throw new IllegalArgumentException("No se permiten opciones repetidas.");
+			}
+			opcionesValidadas.add(opcion);
+			tieneCorrecta |= opcion.correcta();
+		}
+		if (!tieneCorrecta) {
+			throw new IllegalArgumentException("La pregunta debe tener al menos una opción correcta.");
 		}
 
 		this.preguntaId = preguntaId;
 		this.tipo = tipo;
 		this.enunciado = enunciado.trim();
-		this.respuestasCorrectas = Collections.unmodifiableSet(respuestasNormalizadas);
+		this.opciones = List.copyOf(opcionesValidadas);
 		this.puntaje = puntaje;
 		this.activa = true;
 	}
 
 	public static Pregunta reconstruir(
-			UUID preguntaId,
+			Long preguntaId,
 			TipoPregunta tipo,
 			String enunciado,
-			Set<String> respuestasCorrectas,
+			List<OpcionPregunta> opciones,
 			BigDecimal puntaje,
 			boolean activa,
 			boolean usadaEnSesionAplicada
 	) {
-		Pregunta pregunta = new Pregunta(preguntaId, tipo, enunciado, respuestasCorrectas, puntaje);
+		Pregunta pregunta = new Pregunta(preguntaId, tipo, enunciado, opciones, puntaje);
 		pregunta.activa = activa;
 		pregunta.usadaEnSesionAplicada = usadaEnSesionAplicada;
 		return pregunta;
@@ -82,7 +91,7 @@ public final class Pregunta {
 		return !usadaEnSesionAplicada;
 	}
 
-	public UUID preguntaId() {
+	public Long preguntaId() {
 		return preguntaId;
 	}
 
@@ -95,7 +104,18 @@ public final class Pregunta {
 	}
 
 	public Set<String> respuestasCorrectas() {
-		return respuestasCorrectas;
+		return opciones.stream()
+				.filter(OpcionPregunta::correcta)
+				.map(OpcionPregunta::texto)
+				.collect(java.util.stream.Collectors.toUnmodifiableSet());
+	}
+
+	public List<OpcionPregunta> opciones() {
+		return opciones;
+	}
+
+	public boolean tieneOpcionesIncorrectasSuficientes() {
+		return opciones.stream().filter(opcion -> !opcion.correcta()).count() >= 2;
 	}
 
 	public BigDecimal puntaje() {
