@@ -1,0 +1,20 @@
+syntax = "proto3";
+package examenlive.contextos.v1;
+option java_package = "com.examenLive.contratos.contextos.v1";
+option java_multiple_files = true;
+message Identificador { int64 id = 1; }
+message Vacio {}
+message Existencia { bool existe = 1; }
+message OpcionVista { string texto = 1; bool correcta = 2; }
+message PreguntaVista { int64 id = 1; string enunciado = 2; repeated OpcionVista opciones = 3; string puntaje = 4; bool activa = 5; }
+message SesionVista { int64 id = 1; int64 examen_id = 2; string inicio = 3; string fin = 4; }
+message Participante { int64 sesion_id = 1; int64 estudiante_id = 2; }
+service PreguntasGrpc {
+ rpc ObtenerPregunta(Identificador) returns (PreguntaVista);
+ rpc RegistrarUso(Identificador) returns (Vacio);
+}
+service ExamenesGrpc { rpc ExisteExamen(Identificador) returns (Existencia); }
+service SesionesGrpc {
+ rpc ObtenerSesion(Identificador) returns (SesionVista);
+ rpc AgregarEstudiante(Participante) returns (Vacio);
+}
