@@ -1,5 +1,6 @@
 package com.examenLive.examenLive_api.sesiones;
 
+import com.examenLive.examenLive_api.sesiones.dominio.VentanaTiempo;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

@@ -1,7 +1,10 @@
 package com.examenLive.examenLive_api.sesiones;
 
-import com.examenLive.examenLive_api.sesiones.aplicacion.ControlIngresoSesionUseCase;
-import com.examenLive.examenLive_api.sesiones.aplicacion.puertos.salida.SesionRepository;
+import com.examenLive.examenLive_api.sesiones.aplicacion.servicios.ControlIngresoSesionService;
+import com.examenLive.examenLive_api.sesiones.dominio.Sesion;
+import com.examenLive.examenLive_api.sesiones.dominio.VentanaTiempo;
+import com.examenLive.examenLive_api.sesiones.dominio.puertos.entrada.ControlIngresoSesionUseCase;
+import com.examenLive.examenLive_api.sesiones.dominio.puertos.salida.SesionRepository;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -15,88 +18,46 @@ class ControlIngresoSesionServiceTest {
 
     @Test
     void debePermitirIngresarDentroDeLaVentana() {
-        LocalDateTime inicio = LocalDateTime.of(2026, 9, 19, 14, 0);
-        LocalDateTime fin = LocalDateTime.of(2026, 9, 19, 16, 0);
-
-        VentanaTiempo ventana = new VentanaTiempo(inicio, fin);
-        ControlIngresoSesionService servicio = new ControlIngresoSesionService();
-
-        assertTrue(
-                servicio.puedeIngresar(
-                        ventana,
-                        LocalDateTime.of(2026, 9, 19, 15, 0)
-                )
-        );
+        assertTrue(ingresarEn(LocalDateTime.of(2026, 9, 19, 15, 0), false));
     }
 
     @Test
     void debeRechazarIngresoFueraDeLaVentana() {
-        LocalDateTime inicio = LocalDateTime.of(2026, 9, 19, 14, 0);
-        LocalDateTime fin = LocalDateTime.of(2026, 9, 19, 16, 0);
-
-        VentanaTiempo ventana = new VentanaTiempo(inicio, fin);
-        ControlIngresoSesionService servicio = new ControlIngresoSesionService();
-
-        assertFalse(
-                servicio.puedeIngresar(
-                        ventana,
-                        LocalDateTime.of(2026, 9, 19, 16, 0)
-                )
-        );
+        assertFalse(ingresarEn(LocalDateTime.of(2026, 9, 19, 16, 0), false));
     }
 
     @Test
     void debePermitirReingresarSiLaSesionSigueActiva() {
-        LocalDateTime inicio = LocalDateTime.of(2026, 9, 19, 14, 0);
-        LocalDateTime fin = LocalDateTime.of(2026, 9, 19, 16, 0);
-
-        VentanaTiempo ventana = new VentanaTiempo(inicio, fin);
-        ControlIngresoSesionService servicio = new ControlIngresoSesionService();
-
-        assertTrue(
-                servicio.puedeReingresar(
-                        ventana,
-                        LocalDateTime.of(2026, 9, 19, 15, 30)
-                )
-        );
+        assertTrue(ingresarEn(LocalDateTime.of(2026, 9, 19, 15, 30), true));
     }
 
     @Test
     void debeRechazarReingresoDespuesDelCierre() {
-        LocalDateTime inicio = LocalDateTime.of(2026, 9, 19, 14, 0);
-        LocalDateTime fin = LocalDateTime.of(2026, 9, 19, 16, 0);
-
-        VentanaTiempo ventana = new VentanaTiempo(inicio, fin);
-        ControlIngresoSesionService servicio = new ControlIngresoSesionService();
-
-        assertFalse(
-                servicio.puedeReingresar(
-                        ventana,
-                        LocalDateTime.of(2026, 9, 19, 16, 1)
-                )
-        );
+        assertFalse(ingresarEn(LocalDateTime.of(2026, 9, 19, 16, 1), true));
     }
 
         @Test
         void debeRegistrarIngresoDePrincipioAFinConUnFake() {
+                Long sesionId = 1L;
+                Long examenId = 25L;
+                Long estudianteId = 7L;
                 VentanaTiempo ventana = new VentanaTiempo(
                                 LocalDateTime.of(2026, 9, 19, 14, 0),
                                 LocalDateTime.of(2026, 9, 19, 16, 0)
                 );
-                Sesion sesion = new Sesion(1L, 25L, ventana);
+                Sesion sesion = new Sesion(sesionId, examenId, ventana);
                 FakeSesionRepository repositorio = new FakeSesionRepository(sesion);
-                ControlIngresoSesionUseCase casoDeUso =
-                                new ControlIngresoSesionService(repositorio);
+                ControlIngresoSesionUseCase casoDeUso = new ControlIngresoSesionService(repositorio);
 
                 boolean ingresoPermitido = casoDeUso.ingresar(
-                                1L,
-                                7L,
+                                sesionId,
+                                estudianteId,
                                 LocalDateTime.of(2026, 9, 19, 15, 0)
                 );
 
                 assertTrue(ingresoPermitido);
-                assertTrue(repositorio.buscarPorId(1L).orElseThrow()
-                                .getEstudiantesIds().contains(7L));
+                assertTrue(repositorio.buscarPorId(sesionId).orElseThrow()
+                                .getEstudiantesIds().contains(estudianteId));
                 assertEquals(1, repositorio.getCantidadGuardados());
         }
 
@@ -123,5 +84,18 @@ class ControlIngresoSesionServiceTest {
                 private int getCantidadGuardados() {
                         return cantidadGuardados;
                 }
+        }
+
+        private boolean ingresarEn(LocalDateTime momento, boolean reingreso) {
+                VentanaTiempo ventana = new VentanaTiempo(
+                                LocalDateTime.of(2026, 9, 19, 14, 0),
+                                LocalDateTime.of(2026, 9, 19, 16, 0)
+                );
+                Sesion sesion = new Sesion(1L, 25L, ventana);
+                FakeSesionRepository repositorio = new FakeSesionRepository(sesion);
+                ControlIngresoSesionUseCase casoDeUso = new ControlIngresoSesionService(repositorio);
+                return reingreso
+                                ? casoDeUso.reingresar(1L, 7L, momento)
+                                : casoDeUso.ingresar(1L, 7L, momento);
         }
 }
