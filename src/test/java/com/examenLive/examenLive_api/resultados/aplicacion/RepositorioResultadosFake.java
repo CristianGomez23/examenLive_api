@@ -15,4 +15,14 @@ class RepositorioResultadosFake implements RepositorioResultados {
     public Optional<Resultado> buscarPorId(Long id){
         return Optional.ofNullable(datos.get(id));
     }
+
+    public Optional<Resultado> buscarPorSesionYEstudiante(Long sesionId, Long estudianteId){
+        return datos.values().stream()
+            .filter(r -> r.sesionId().equals(sesionId) && r.estudianteId().equals(estudianteId))
+            .findFirst();
+    }
+
+    public List<Resultado> buscarPorEstudiante(Long estudianteId){
+        return datos.values().stream().filter(r -> r.estudianteId().equals(estudianteId)).toList();
+    }
 }

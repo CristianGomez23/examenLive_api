@@ -14,6 +14,12 @@ import com.examenLive.examenLive_api.preguntas.aplicacion.servicios.PreguntaServ
 import com.examenLive.examenLive_api.preguntas.dominio.OpcionPregunta;
 import com.examenLive.examenLive_api.preguntas.dominio.Pregunta;
 import com.examenLive.examenLive_api.preguntas.dominio.TipoPregunta;
+import com.examenLive.examenLive_api.resultados.aplicacion.ResultadoFactory;
+import com.examenLive.examenLive_api.resultados.aplicacion.servicios.CalificacionAutomaticaService;
+import com.examenLive.examenLive_api.resultados.aplicacion.servicios.ResultadoService;
+import com.examenLive.examenLive_api.resultados.dominio.EstadoResultado;
+import com.examenLive.examenLive_api.resultados.dominio.Resultado;
+import com.examenLive.examenLive_api.resultados.dominio.puertos.salida.RepositorioResultados;
 import com.examenLive.examenLive_api.sesiones.dominio.puertos.salida.SesionRepository;
 import com.examenLive.examenLive_api.sesiones.dominio.Sesion;
 import com.examenLive.examenLive_api.sesiones.dominio.SesionFactory;
@@ -32,6 +38,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExamenServiceTest {
@@ -59,7 +67,8 @@ class ExamenServiceTest {
 		FakeIntentoRepository intentos = new FakeIntentoRepository();
 		FakeSesionRepository sesiones = new FakeSesionRepository();
 		Reloj reloj = reloj("2026-10-05T10:00:00Z");
-		ExamenService servicio = new ExamenService(examenes, intentos, preguntas, ids, sesiones, reloj);
+		ResultadoService resultados = resultados(ids);
+		ExamenService servicio = new ExamenService(examenes, intentos, preguntas, ids, sesiones, reloj, resultados);
 
 		Examen examen = servicio.crear(
 				"Evaluación de prueba", List.of(primera.preguntaId(), segunda.preguntaId()), 30
@@ -98,6 +107,22 @@ class ExamenServiceTest {
 		assertEquals(4, List.of(
 				primera.preguntaId(), segunda.preguntaId(), examen.examenId(), alIniciar.intentoId()
 		).stream().distinct().count());
+
+		// Al terminar el intento se genera un resultado con id propio, calificado y consultable.
+		assertNull(alIniciar.resultadoId());
+		assertNotNull(finalizado.resultadoId());
+		Resultado resultado = resultados.consultar(finalizado.resultadoId());
+		assertEquals(EstadoResultado.CALIFICADO, resultado.estado());
+		assertEquals(sesion.getId(), resultado.sesionId());
+		assertEquals(700L, resultado.estudianteId());
+		assertEquals(new BigDecimal("2.5"), resultado.calificacion().orElseThrow().puntajeObtenido());
+		assertEquals(new BigDecimal("3.5"), resultado.calificacion().orElseThrow().puntajeMaximo());
+		assertEquals(1, resultado.calificacion().orElseThrow().respuestasCorrectas());
+		assertEquals(1, resultado.respuestas().size());
+		assertEquals(Set.of("A", "B"), resultado.respuestaPara(primera.preguntaId()).orElseThrow().valoresSeleccionados());
+		// Consultar de nuevo el intento no crea otro resultado.
+		assertEquals(finalizado.resultadoId(), servicio.consultarIntento(finalizado.intentoId()).resultadoId());
+		assertEquals(1, resultados.consultarPorEstudiante(700L).size());
 	}
 
 	@Test
@@ -113,8 +138,9 @@ class ExamenServiceTest {
 		FakeExamenRepository examenes = new FakeExamenRepository();
 		FakeIntentoRepository intentos = new FakeIntentoRepository();
 		FakeSesionRepository sesiones = new FakeSesionRepository();
+		ResultadoService resultados = resultados(ids);
 		ExamenService servicioAlInicio = new ExamenService(
-				examenes, intentos, preguntas, ids, sesiones, reloj("2026-10-05T11:50:00Z")
+				examenes, intentos, preguntas, ids, sesiones, reloj("2026-10-05T11:50:00Z"), resultados
 		);
 		Examen examen = servicioAlInicio.crear("Cierre temprano", List.of(pregunta.preguntaId()), 60);
 		Sesion sesion = new SesionFactory(ids).crear(
@@ -126,10 +152,12 @@ class ExamenServiceTest {
 		assertEquals(540, intento.segundosRestantes());
 
 		ExamenService servicioTrasCierre = new ExamenService(
-				examenes, intentos, preguntas, ids, sesiones, reloj("2026-10-05T12:00:00Z")
+				examenes, intentos, preguntas, ids, sesiones, reloj("2026-10-05T12:00:00Z"), resultados
 		);
 		IntentoExamenVista vencido = servicioTrasCierre.consultarIntento(intento.intentoId());
 		assertTrue(vencido.finalizado());
+		assertNotNull(vencido.resultadoId());
+		assertEquals(0, resultados.consultar(vencido.resultadoId()).calificacion().orElseThrow().puntajeObtenido().signum());
 		assertEquals(0, vencido.calificacion().puntajeObtenido().signum());
 		assertEquals(0, vencido.segundosRestantes());
 		org.junit.jupiter.api.Assertions.assertThrows(
@@ -151,12 +179,18 @@ class ExamenServiceTest {
 		);
 		ExamenService servicio = new ExamenService(
 				new FakeExamenRepository(), new FakeIntentoRepository(), preguntas, ids,
-				new FakeSesionRepository(), reloj("2026-10-05T10:00:00Z")
+				new FakeSesionRepository(), reloj("2026-10-05T10:00:00Z"), resultados(ids)
 		);
 
 		org.junit.jupiter.api.Assertions.assertThrows(
 				IllegalArgumentException.class,
 				() -> servicio.crear("Duplicado", List.of(pregunta.preguntaId(), pregunta.preguntaId()), 30)
+		);
+	}
+
+	private static ResultadoService resultados(GeneradorIdNumericoFake ids) {
+		return new ResultadoService(
+				new FakeResultadoRepository(), new ResultadoFactory(ids), new CalificacionAutomaticaService()
 		);
 	}
 
@@ -171,6 +205,33 @@ class ExamenServiceTest {
 	private static boolean tieneCampoCorrecta(Class<?> tipo) {
 		return java.util.Arrays.stream(tipo.getRecordComponents())
 				.anyMatch(componente -> componente.getName().equals("correcta"));
+	}
+
+	private static class FakeResultadoRepository implements RepositorioResultados {
+		private final Map<Long, Resultado> datos = new HashMap<>();
+
+		@Override
+		public Resultado guardar(Resultado resultado) {
+			datos.put(resultado.resultadoId(), resultado);
+			return resultado;
+		}
+
+		@Override
+		public Optional<Resultado> buscarPorId(Long resultadoId) {
+			return Optional.ofNullable(datos.get(resultadoId));
+		}
+
+		@Override
+		public Optional<Resultado> buscarPorSesionYEstudiante(Long sesionId, Long estudianteId) {
+			return datos.values().stream()
+					.filter(r -> r.sesionId().equals(sesionId) && r.estudianteId().equals(estudianteId))
+					.findFirst();
+		}
+
+		@Override
+		public List<Resultado> buscarPorEstudiante(Long estudianteId) {
+			return datos.values().stream().filter(r -> r.estudianteId().equals(estudianteId)).toList();
+		}
 	}
 
 	private static class FakePreguntaRepository implements PreguntaRepository {

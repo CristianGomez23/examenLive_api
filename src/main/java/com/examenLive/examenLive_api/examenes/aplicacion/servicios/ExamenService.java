@@ -11,8 +11,12 @@ import com.examenLive.examenLive_api.identidad.dominio.puertos.salida.GeneradorI
 import com.examenLive.examenLive_api.identidad.dominio.puertos.salida.Reloj;
 import com.examenLive.examenLive_api.preguntas.dominio.puertos.salida.PreguntaRepository;
 import com.examenLive.examenLive_api.preguntas.dominio.Pregunta;
+import com.examenLive.examenLive_api.resultados.dominio.PreguntaCalificable;
+import com.examenLive.examenLive_api.resultados.dominio.Resultado;
+import com.examenLive.examenLive_api.resultados.dominio.puertos.entrada.ResultadoUseCase;
 import com.examenLive.examenLive_api.sesiones.dominio.Sesion;
 import com.examenLive.examenLive_api.sesiones.dominio.puertos.salida.SesionRepository;
+import com.examenLive.examenLive_api.identidad.dominio.RecursoNoEncontradoException;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +38,7 @@ public class ExamenService implements ExamenUseCase {
 	private final GeneradorId generadorId;
 	private final SesionRepository sesiones;
 	private final Reloj reloj;
+	private final ResultadoUseCase resultados;
 
 	public ExamenService(
 			ExamenRepository examenes,
@@ -41,7 +46,8 @@ public class ExamenService implements ExamenUseCase {
 			PreguntaRepository preguntas,
 			GeneradorId generadorId,
 			SesionRepository sesiones,
-			Reloj reloj
+			Reloj reloj,
+			ResultadoUseCase resultados
 	) {
 		this.examenes = examenes;
 		this.intentos = intentos;
@@ -49,6 +55,7 @@ public class ExamenService implements ExamenUseCase {
 		this.generadorId = generadorId;
 		this.sesiones = sesiones;
 		this.reloj = reloj;
+		this.resultados = resultados;
 	}
 
 	@Override
@@ -122,7 +129,7 @@ public class ExamenService implements ExamenUseCase {
 	}
 
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional
 	public IntentoExamenVista consultarIntento(Long intentoId) {
 		IntentoExamen intento = finalizarSiVencido(buscarIntento(intentoId), reloj.ahora());
 		Examen examen = buscarExamen(intento.examenId());
@@ -134,8 +141,7 @@ public class ExamenService implements ExamenUseCase {
 	public IntentoExamenVista registrarRespuesta(Long intentoId, Long preguntaId, Set<String> seleccionadas) {
 		IntentoExamen intento = buscarIntento(intentoId);
 		if (intento.estaVencido(reloj.ahora()) && !intento.finalizado()) {
-			intento = finalizarIntentoEnDominio(intento);
-			intentos.guardar(intento);
+			intento = cerrarIntento(intento);
 			return crearVista(intento, buscarExamen(intento.examenId()), cargarPreguntas(intento.preguntasIds()));
 		}
 		Pregunta pregunta = buscarPregunta(preguntaId);
@@ -150,8 +156,7 @@ public class ExamenService implements ExamenUseCase {
 		IntentoExamen intento = buscarIntento(intentoId);
 		Examen examen = buscarExamen(intento.examenId());
 		List<Pregunta> preguntasDelExamen = cargarPreguntas(intento.preguntasIds());
-		intento.finalizar(preguntasDelExamen);
-		intentos.guardar(intento);
+		cerrarIntento(intento, preguntasDelExamen);
 		return crearVista(intento, examen, preguntasDelExamen);
 	}
 
@@ -160,8 +165,7 @@ public class ExamenService implements ExamenUseCase {
 	public void finalizarIntentosVencidos() {
 		LocalDateTime ahora = reloj.ahora();
 		for (IntentoExamen intento : intentos.buscarVencidos(ahora)) {
-			finalizarIntentoEnDominio(intento);
-			intentos.guardar(intento);
+			cerrarIntento(intento);
 		}
 	}
 
@@ -184,6 +188,9 @@ public class ExamenService implements ExamenUseCase {
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 		long segundosRestantes = intento.finalizado() ? 0
 				: Math.max(0, Duration.between(reloj.ahora(), intento.venceEn()).toSeconds());
+		Long resultadoId = intento.finalizado()
+				? generarResultado(intento, preguntasDelExamen).resultadoId()
+				: null;
 		return new IntentoExamenVista(
 				intento.intentoId(),
 				intento.sesionId(),
@@ -197,7 +204,8 @@ public class ExamenService implements ExamenUseCase {
 				intento.preguntasPendientes(),
 				intento.finalizado(),
 				puntajeMaximo,
-				intento.calificacion()
+				intento.calificacion(),
+				resultadoId
 		);
 	}
 
@@ -207,35 +215,58 @@ public class ExamenService implements ExamenUseCase {
 
 	private Pregunta buscarPregunta(Long preguntaId) {
 		return preguntas.buscarPorId(preguntaId)
-				.orElseThrow(() -> new IllegalArgumentException("No existe la pregunta indicada."));
+				.orElseThrow(() -> new RecursoNoEncontradoException("No existe la pregunta indicada."));
 	}
 
 	private Examen buscarExamen(Long examenId) {
 		return examenes.buscarPorId(examenId)
-				.orElseThrow(() -> new IllegalArgumentException("No existe el examen indicado."));
+				.orElseThrow(() -> new RecursoNoEncontradoException("No existe el examen indicado."));
 	}
 
 	private IntentoExamen buscarIntento(Long intentoId) {
 		return intentos.buscarPorId(intentoId)
-				.orElseThrow(() -> new IllegalArgumentException("No existe el intento indicado."));
+				.orElseThrow(() -> new RecursoNoEncontradoException("No existe el intento indicado."));
 	}
 
 	private Sesion buscarSesion(Long sesionId) {
 		return sesiones.buscarPorId(sesionId)
-				.orElseThrow(() -> new IllegalArgumentException("No existe la sesión indicada."));
+				.orElseThrow(() -> new RecursoNoEncontradoException("No existe la sesión indicada."));
 	}
 
 	private IntentoExamen finalizarSiVencido(IntentoExamen intento, LocalDateTime ahora) {
 		if (!intento.finalizado() && intento.estaVencido(ahora)) {
-			finalizarIntentoEnDominio(intento);
-			return intentos.guardar(intento);
+			return cerrarIntento(intento);
 		}
 		return intento;
 	}
 
-	private IntentoExamen finalizarIntentoEnDominio(IntentoExamen intento) {
-		Examen examen = buscarExamen(intento.examenId());
-		intento.finalizar(cargarPreguntas(examen.preguntasIds()));
+	private IntentoExamen cerrarIntento(IntentoExamen intento) {
+		return cerrarIntento(intento, cargarPreguntas(intento.preguntasIds()));
+	}
+
+	/**
+	 * Califica y finaliza el intento, lo persiste y genera su Resultado (con id propio),
+	 * que es lo que consulta el estudiante al cierre (HU-07) y en su historial (HU-09).
+	 */
+	private IntentoExamen cerrarIntento(IntentoExamen intento, List<Pregunta> preguntasDelExamen) {
+		intento.finalizar(preguntasDelExamen);
+		intentos.guardar(intento);
+		generarResultado(intento, preguntasDelExamen);
 		return intento;
+	}
+
+	/**
+	 * Idempotente: si el resultado ya existe lo devuelve. También "sana" intentos finalizados
+	 * antes de existir la integración, que se quedaron sin resultado.
+	 */
+	private Resultado generarResultado(IntentoExamen intento, List<Pregunta> preguntasDelExamen) {
+		List<PreguntaCalificable> calificables = preguntasDelExamen.stream()
+				.map(pregunta -> new PreguntaCalificable(
+						pregunta.preguntaId(), pregunta.respuestasCorrectas(), pregunta.puntaje()
+				))
+				.toList();
+		return resultados.generarResultado(
+				intento.sesionId(), intento.estudianteId(), intento.respuestasPorPregunta(), calificables
+		);
 	}
 }

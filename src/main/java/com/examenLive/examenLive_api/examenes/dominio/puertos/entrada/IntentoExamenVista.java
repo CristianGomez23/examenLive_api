@@ -19,6 +19,7 @@ public record IntentoExamenVista(
 		int preguntasPendientes,
 		boolean finalizado,
 		BigDecimal puntajeMaximo,
-		CalificacionIntento calificacion
+		CalificacionIntento calificacion,
+		Long resultadoId
 ) {
 }

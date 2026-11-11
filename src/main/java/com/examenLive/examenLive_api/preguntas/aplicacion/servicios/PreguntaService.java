@@ -6,6 +6,7 @@ import com.examenLive.examenLive_api.preguntas.dominio.puertos.salida.PreguntaRe
 import com.examenLive.examenLive_api.preguntas.dominio.OpcionPregunta;
 import com.examenLive.examenLive_api.preguntas.dominio.Pregunta;
 import com.examenLive.examenLive_api.preguntas.dominio.TipoPregunta;
+import com.examenLive.examenLive_api.identidad.dominio.RecursoNoEncontradoException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -79,6 +80,6 @@ public class PreguntaService implements PreguntaUseCase {
 			throw new IllegalArgumentException("El identificador de la pregunta es obligatorio.");
 		}
 		return repositorio.buscarPorId(preguntaId)
-				.orElseThrow(() -> new IllegalArgumentException("No existe la pregunta indicada."));
+				.orElseThrow(() -> new RecursoNoEncontradoException("No existe la pregunta indicada."));
 	}
 }

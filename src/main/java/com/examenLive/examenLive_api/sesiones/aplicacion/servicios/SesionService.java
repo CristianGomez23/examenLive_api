@@ -7,6 +7,7 @@ import com.examenLive.examenLive_api.sesiones.dominio.puertos.salida.SesionRepos
 import com.examenLive.examenLive_api.sesiones.dominio.Sesion;
 import com.examenLive.examenLive_api.sesiones.dominio.SesionFactory;
 import com.examenLive.examenLive_api.sesiones.dominio.VentanaTiempo;
+import com.examenLive.examenLive_api.identidad.dominio.RecursoNoEncontradoException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class SesionService implements SesionUseCase {
 	@Transactional
 	public Sesion programar(Long examenId, LocalDateTime inicio, LocalDateTime fin) {
 		examenes.buscarPorId(examenId)
-				.orElseThrow(() -> new IllegalArgumentException("No existe el examen indicado."));
+				.orElseThrow(() -> new RecursoNoEncontradoException("No existe el examen indicado."));
 		Sesion sesion = factory.crear(examenId, new VentanaTiempo(inicio, fin));
 		sesiones.guardar(sesion);
 		return sesion;
@@ -39,6 +40,6 @@ public class SesionService implements SesionUseCase {
 	@Transactional(readOnly = true)
 	public Sesion consultar(Long sesionId) {
 		return sesiones.buscarPorId(sesionId)
-				.orElseThrow(() -> new IllegalArgumentException("No existe la sesión indicada."));
+				.orElseThrow(() -> new RecursoNoEncontradoException("No existe la sesión indicada."));
 	}
 }

@@ -32,6 +32,25 @@ public final class Resultado {
 		this.estado = EstadoResultado.EN_CURSO;
 	}
 
+	/**
+	 * Reconstruye un resultado ya persistido (con sus respuestas, estado y calificación).
+	 */
+	public static Resultado reconstruir(
+			Long resultadoId,
+			Long sesionId,
+			Long estudianteId,
+			Instant creadoEn,
+			EstadoResultado estado,
+			List<Respuesta> respuestas,
+			Calificacion calificacion
+	) {
+		Resultado resultado = new Resultado(resultadoId, sesionId, estudianteId, creadoEn);
+		respuestas.forEach(respuesta -> resultado.respuestasPorPregunta.put(respuesta.preguntaId(), respuesta));
+		resultado.estado = estado;
+		resultado.calificacion = calificacion;
+		return resultado;
+	}
+
 	public void registrarRespuesta(Respuesta respuesta) {
 		if (respuesta == null) {
 			throw new IllegalArgumentException("La respuesta por registrar es obligatoria.");
