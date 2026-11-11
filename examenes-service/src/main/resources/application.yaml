@@ -1,0 +1,63 @@
+server:
+  port: ${PORT:8182}
+spring:
+  application:
+    name: examenes-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5542/examenes}
+    username: ${DB_USER:examenes}
+    password: ${DB_PASSWORD:examenes}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9292}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.block.ms: 5000
+        delivery.timeout.ms: 10000
+        request.timeout.ms: 5000
+    consumer:
+      group-id: examenes-service-v1
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        max.poll.records: 20
+    listener:
+      ack-mode: record
+      auto-startup: ${KAFKA_LISTENER_ENABLED:true}
+  grpc:
+    server:
+      port: ${GRPC_PORT:9192}
+    client:
+      channel:
+        preguntas:
+          target: ${PREGUNTAS_GRPC_TARGET:static://localhost:9191}
+          negotiation-type: plaintext
+        sesiones:
+          target: ${SESIONES_GRPC_TARGET:static://localhost:9193}
+          negotiation-type: plaintext
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    enabled: ${EUREKA_ENABLED:true}
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8861/eureka/}
+comunicacion:
+  outbox:
+    enabled: ${OUTBOX_ENABLED:true}
+    intervalo-ms: 2000
+  grpc:
+    deadline-ms: 5000

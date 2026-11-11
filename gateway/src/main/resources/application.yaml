@@ -1,0 +1,30 @@
+server:
+  port: ${PORT:8100}
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: examenes
+              uri: lb://examenes-service
+              predicates:
+                - Path=/api/examenes/**,/api/intentos-examen/**,/api/sesiones/*/intentos
+            - id: sesiones
+              uri: lb://sesiones-service
+              predicates:
+                - Path=/api/sesiones/**
+            - id: preguntas
+              uri: lb://preguntas-service
+              predicates:
+                - Path=/api/preguntas/**
+            - id: resultados
+              uri: lb://resultados-service
+              predicates:
+                - Path=/api/resultados/**
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8861/eureka/}

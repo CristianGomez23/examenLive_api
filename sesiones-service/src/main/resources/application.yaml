@@ -1,0 +1,38 @@
+server:
+  port: ${PORT:8183}
+spring:
+  application:
+    name: sesiones-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5543/sesiones}
+    username: ${DB_USER:sesiones}
+    password: ${DB_PASSWORD:sesiones}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+  grpc:
+    server:
+      port: ${GRPC_PORT:9193}
+    client:
+      channel:
+        examenes:
+          target: ${EXAMENES_GRPC_TARGET:static://localhost:9192}
+          negotiation-type: plaintext
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    enabled: ${EUREKA_ENABLED:true}
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8861/eureka/}
+comunicacion:
+  outbox:
+    enabled: ${OUTBOX_ENABLED:true}
+    intervalo-ms: 2000
+  grpc:
+    deadline-ms: 5000
