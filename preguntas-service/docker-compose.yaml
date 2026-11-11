@@ -1,0 +1,17 @@
+name: examenlive-microservicios
+services:
+  preguntas-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: preguntas
+      POSTGRES_USER: preguntas
+      POSTGRES_PASSWORD: preguntas
+    ports: ["5541:5432"]
+    volumes: ["preguntas_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U preguntas -d preguntas"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  preguntas_data:
