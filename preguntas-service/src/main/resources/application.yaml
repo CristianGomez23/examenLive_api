@@ -1,0 +1,33 @@
+server:
+  port: ${PORT:8181}
+spring:
+  application:
+    name: preguntas-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5541/preguntas}
+    username: ${DB_USER:preguntas}
+    password: ${DB_PASSWORD:preguntas}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+  grpc:
+    server:
+      port: ${GRPC_PORT:9191}
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    enabled: ${EUREKA_ENABLED:true}
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8861/eureka/}
+comunicacion:
+  outbox:
+    enabled: ${OUTBOX_ENABLED:true}
+    intervalo-ms: 2000
+  grpc:
+    deadline-ms: 5000

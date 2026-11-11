@@ -1,0 +1,25 @@
+syntax = "proto3";
+package examenlive.intentos.v1;
+option java_package = "com.examenLive.contratos.intentos.v1";
+option java_multiple_files = true;
+// Datos internos; nunca se exponen las claves correctas al navegador.
+service IntentosGrpc {
+  rpc ObtenerIntentoFinalizado (SolicitudIntento) returns (IntentoFinalizado);
+}
+message SolicitudIntento { int64 intento_id = 1; }
+message IntentoFinalizado {
+  int64 intento_id = 1;
+  int64 sesion_id = 2;
+  int64 estudiante_id = 3;
+  repeated RespuestaIntento respuestas = 4;
+  repeated PreguntaIntento preguntas = 5;
+}
+message RespuestaIntento {
+  int64 pregunta_id = 1;
+  repeated string opciones_seleccionadas = 2;
+}
+message PreguntaIntento {
+  int64 pregunta_id = 1;
+  repeated string respuestas_correctas = 2;
+  optional string puntaje = 3; // decimal exacto; ausencia != cero
+}
