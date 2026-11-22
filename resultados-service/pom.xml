@@ -14,7 +14,7 @@
 	<name>resultados-service</name>
 	<description>Microservicio de Calificación y Resultados de ExamenLive</description>
 	<properties>
-		<java.version>25</java.version>
+		<java.version>22</java.version>
 <spring-cloud.version>2025.1.3</spring-cloud.version>
 	</properties>
 	<dependencies>

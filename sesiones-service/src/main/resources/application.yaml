@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8183}
+  port: 8183
 spring:
   application:
     name: sesiones-service
