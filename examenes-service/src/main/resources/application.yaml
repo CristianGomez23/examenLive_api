@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8182}
+  port: 8182
 spring:
   application:
     name: examenes-service

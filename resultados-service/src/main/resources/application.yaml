@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:8184}
+  port: 8184
 spring:
   application:
     name: resultados-service
